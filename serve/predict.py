@@ -69,10 +69,9 @@ def predict_fn(input_data, model):
     #       You should produce two variables:
     #         data_X   - A sequence of length 500 which represents the converted review
     #         data_len - The length of the review
-
-    data_X = None
-    data_len = None
-
+    data_X, data_len = convert_and_pad(model.word_dict, review_to_words(input_data))
+    data_X, data_len = np.array(data_X), np.array(data_len)
+    
     # Using data_X and data_len we construct an appropriate input tensor. Remember
     # that our model expects input data of the form 'len, review[500]'.
     data_pack = np.hstack((data_len, data_X))
@@ -86,7 +85,22 @@ def predict_fn(input_data, model):
 
     # TODO: Compute the result of applying the model to the input data. The variable `result` should
     #       be a numpy array which contains a single integer which is either 1 or 0
-
-    result = None
+    
+    # Reference: https://knowledge.udacity.com/questions/23616
+    # Reference: https://study-hall.udacity.com/rooms/community:nd101:633452-cohort-2455-project-2262/community:thread-271916691-456216?contextType=room
+    # Reference: https://study-hall.udacity.com/rooms/community:nd101:633452-cohort-2455-project-2262/community:thread-u26834124-410140?contextType=room 
+    
+ 
+    with torch.no_grad():
+        # Take a forward path
+        output = model.forward(data)
+        
+        # TO DO: Study why this is required? It is non-intuitive.
+        # Move the result to cpu (this is a must if GPU was used)
+        output = output.to('cpu')
+        
+        # TO DO: Study why this is required? It is non-intuitive.
+        # Make the result an int (0 or 1)
+        result = np.round(output.numpy())
 
     return result
